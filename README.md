@@ -5,7 +5,7 @@ A Docker image for [OpenMRS Modulus][2] Developers :whale:
 **Hosted on [Docker Hub][1]**.
 
 **To Run It :**
-`docker run --name modulus -h modulus openmrs/modulus:dev-1.0`
+`docker run --name modulus -h modulus openmrs/modulus:dev`
 
 ### IMPORTANT: Before You Start
 
@@ -15,11 +15,12 @@ A Docker image for [OpenMRS Modulus][2] Developers :whale:
 1. Add your user account to the docker group: `usermod -a -G docker yourusername` and re-login.
 1. Make sure these ports are free on your host.
 
-### Pull the container and run it
+### Build the container and run it
 
-1. **Pull** this container from Docker Hub : ``docker pull openmrs/modulus:dev-1.0`
+1. **Build** the base container : ``docker build -t openmrs/modulus:base ./modulus_base``
+1. **Build** the dev container : ``docker build -t openmrs/modulus:dev ./modulus_dev``
 2. **Run** with environnement variable, hostname, ports 
-`docker run--name modulus -h modulus openmrs/modulus:dev-1.0`
+`docker run --name modulus -h modulus openmrs/modulus:base`
 3. **Shutdow** the container when you finish your work : ``docker stop modulus``
 4. **Start** the container when needed : ``docker start modulus``
 
@@ -28,6 +29,8 @@ A Docker image for [OpenMRS Modulus][2] Developers :whale:
 *TODO*
 
 ### Tips
+
+You can ssh the container : ``ssh root@0.0.0.0``. *(pass: password)*
 
 [Modulus repository][4]
 
