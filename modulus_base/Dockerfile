@@ -1,6 +1,8 @@
 FROM ubuntu:14.04
 MAINTAINER Alexis DUQUE "alexis.duque@openmrs.org"
 
+ENV GRAILS_PORT 8080
+
 #Add universe repository and update
 RUN echo "debconf debconf/frontend select Teletype" | debconf-set-selections &&apt-get -y update &&\
 	apt-get -y install software-properties-common &&\
@@ -11,27 +13,53 @@ RUN apt-get -y update &&\
     apt-mark hold initscripts &&\
     apt-get -y upgrade
 
-#Install Mysql server
-RUN apt-get -y update && apt-get install -y wget mysql-server
+RUN mkdir -p /var/run/sshd &&\
+    mkdir -p /var/log/supervisor &&\
+    mkdir -p /var/lib/mysql
 
-#Create modulus user
-RUN useradd modulus -s /bin/bash -m -U
+#Install OpenSSH and Supervisor
+RUN apt-get install -y openssh-server openssl ssl-cert
+RUN mkdir -p /root/.ssh &&\
+	echo "root:password" | chpasswd
+RUN sed --in-place=.bak 's/without-password/yes/' /etc/ssh/sshd_config
+
+#Install Mysql server
+RUN apt-get -y update && apt-get install -y wget mysql-server curl git build-essential libssl-dev supervisor tar unzip
 
 #Download and setup Java Oracle JDK7
-RUN wget --progress=bar --no-check-certificate -O /tmp/server-jre-7u51-linux-x64.tar.gz --header "Cookie: oraclelicense=a" http://download.oracle.com/otn-pub/java/jdk/7u51-b13/server-jre-7u51-linux-x64.tar.gz
+RUN sed 's/main$/main universe/' -i /etc/apt/sources.list
+RUN apt-get update && apt-get install -y software-properties-common python-software-properties
+RUN add-apt-repository ppa:webupd8team/java -y
 
-RUN echo "c5a034f4222bac326101799bcb20509c  /tmp/server-jre-7u51-linux-x64.tar.gz" | md5sum -c > /dev/null 2>&1 || echo "ERROR: MD5SUM MISMATCH"
-RUN tar xzf /tmp/server-jre-7u51-linux-x64.tar.gz 
-RUN mkdir -p /usr/lib/jvm/java-7-oracle 
-RUN mv jdk1.7.0_51/jre /usr/lib/jvm/java-7-oracle/jre 
-RUN rm -rf jdk1.7.0_51 && rm /tmp/server-jre-7u51-linux-x64.tar.gz
-RUN chown root:root -R /usr/lib/jvm/java-7-oracle
-RUN update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-7-oracle/jre/bin/java 1
-RUN update-alternatives --set java /usr/lib/jvm/java-7-oracle/jre/bin/java
+RUN apt-get update
+RUN echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
 
-ADD start.sh /usr/local/bin/run
+RUN apt-get install -y oracle-java7-installer
+
+#Install GVM and Grails
+ENV HOME /root
+RUN curl -s get.gvmtool.net | bash &&\
+    bash -c "source "~/.gvm/bin/gvm-init.sh" && yes y | gvm install grails 2.3.7 ; exit 0"
+
+#Install Node
+RUN git clone https://github.com/creationix/nvm.git /.nvm &&\
+    echo ". /.nvm/nvm.sh" >> /etc/bash.bashrc &&\
+    /bin/bash -c '. /.nvm/nvm.sh && nvm install v0.10.18 && nvm use v0.10.18 &&\
+    nvm alias default v0.10.18 && ln -s /.nvm/v0.10.18/bin/node /usr/bin/node &&\
+    ln -s /.nvm/v0.10.18/bin/npm /usr/bin/npm' &&\
+    npm install forever -g
+
+#Install Grunt
+RUN npm install grunt@master -g &&\
+    npm install grunt-cli -g &&\
+    npm install grunt-init@master -g
+
+ADD run.sh /usr/local/bin/run
+ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN chmod a+x usr/local/bin/run
 
 RUN sed -i 's/^bind-address.*/bind-address = 0.0.0.0/' /etc/mysql/my.cnf
+
+EXPOSE 22 8080 8083
 
 CMD ["/usr/local/bin/run"]

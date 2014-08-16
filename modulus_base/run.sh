@@ -3,7 +3,7 @@
 MYSQL_PASSWORD=mysql
 DATABASE_NAME=modulus
 DATABASE_USER=modulus
-DB_USER_PASSWD=modulus
+DB_USER_PASSWD=secret
 
 if [ ! -e /etc/.initsuccess ]
 then
@@ -23,9 +23,8 @@ mysql -uroot -p$MYSQL_PASSWORD -e "GRANT ALL PRIVILEGES ON $DATABASE_NAME.* TO '
 echo "Stop mysqld"
 killall mysqld
 sleep 10s
+
 touch /etc/.initsuccess
 fi
 
-echo "Launch Mysql Server"
-
-service mysql start
+/usr/bin/supervisord
