@@ -2,10 +2,9 @@ Modulus Docker Application
 ============
 A Docker image for [OpenMRS Modulus][2] Developers :whale:
 
-**Hosted on [Docker Hub][1]**.
+**Hosted on [Docker Hub][1]**. *(not yet)*  :smirk:
 
-**To Run It :**
-`docker run --name modulus -h modulus openmrs/modulus:dev`
+`docker run --name modulus -h modulus -p 22:22 -p 8080:8080 -p 8083:8083 openmrs/modulus:dev`
 
 ### IMPORTANT: Before You Start
 
@@ -20,7 +19,7 @@ A Docker image for [OpenMRS Modulus][2] Developers :whale:
 1. **Build** the base container : ``docker build -t openmrs/modulus:base ./modulus_base``
 1. **Build** the dev container : ``docker build -t openmrs/modulus:dev ./modulus_dev``
 2. **Run** with environnement variable, hostname, ports 
-`docker run --name modulus -h modulus openmrs/modulus:base`
+`docker run -p 8080:8080 -p 8083:8083 -p 22:22 --name modulus -h modulus openmrs/modulus:base`
 3. **Shutdow** the container when you finish your work : ``docker stop modulus``
 4. **Start** the container when needed : ``docker start modulus``
 
