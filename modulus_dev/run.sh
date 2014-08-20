@@ -5,10 +5,25 @@ DATABASE_NAME=modulus
 DATABASE_USER=modulus
 DB_USER_PASSWD=secret
 
-if [ ! -e /etc/.initsuccess ]
-then
 source "/root/.gvm/bin/gvm-init.sh"
 gvm use grails 2.3.7
+
+if [ ! -e /opt/modulus/grailsw ]
+then
+	git clone https://github.com/openmrs/openmrs-contrib-modulus.git /opt/modulus
+	cd /opt/modulus && git submodule update --init
+fi
+
+if [ ! -e /opt/modulus-ui/Gruntfile.js ]
+then
+	git clone https://github.com/openmrs/openmrs-contrib-modulus-ui.git /opt/modulus-ui
+	cd /opt/modulus-ui && npm install
+	cd /opt/modulus-ui && grunt build
+	sed -i 's#/modulus#http://localhost:8080#g' /opt/modulus-ui/config/modulusui.conf.js
+fi
+
+if [ ! -e /etc/.initsuccess ]
+then
 
 echo "Setup  mysql ...."
 

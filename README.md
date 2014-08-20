@@ -4,7 +4,9 @@ A Docker image for [OpenMRS Modulus][2] Developers :whale:
 
 **Hosted on [Docker Hub][1]**. *(not yet)*  :smirk:
 
-`docker run --name modulus -h modulus -p 22:22 -p 8080:8080 -p 8083:8083 openmrs/modulus:dev`
+Create an empty folder in your workspace (ex: /opt/modulus-dev) : `mkdir /opt/dev`
+
+Create the container: `docker run --name modulus -h modulus -p 22:22 -p 8080:8080 -p 8083:8083 -v /opt/dev:/opt openmrs/modulus:dev`
 
 ### IMPORTANT: Before You Start
 
